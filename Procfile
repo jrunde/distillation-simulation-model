@@ -1,0 +1,1 @@
+web: bundle exec ruby sinat.rb -p $PORT

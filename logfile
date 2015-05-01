@@ -1,0 +1,103 @@
+2013-04-04T19:26:19+00:00 app[web.1]: [2013-04-04 19:26:19] INFO  WEBrick 1.3.1
+2013-04-04T19:26:19+00:00 app[web.1]: == Sinatra/1.3.5 has taken the stage on 44892 for production with backup from WEBrick
+2013-04-04T19:26:19+00:00 app[web.1]: [2013-04-04 19:26:19] INFO  WEBrick::HTTPServer#start: pid=2 port=44892
+2013-04-04T19:26:20+00:00 heroku[web.1]: State changed from starting to up
+2013-04-04T19:26:21+00:00 heroku[router]: at=info method=GET path=/start host=mysterious-cliffs-4762.herokuapp.com fwd="50.17.161.113" dyno=web.1 connect=1ms service=168ms status=200 bytes=50
+2013-04-04T19:26:21+00:00 app[web.1]: 50.17.161.113 - - [04/Apr/2013 19:26:21] "GET /start HTTP/1.1" 200 50 0.0650
+2013-04-04T19:26:21+00:00 app[web.1]: 10.42.206.201 - - [04/Apr/2013:19:26:21 UTC] "GET /start HTTP/1.1" 200 50
+2013-04-04T19:26:21+00:00 app[web.1]: - -> /start
+2013-04-04T19:26:22+00:00 app[web.1]: connecting to redis server
+2013-04-04T19:26:24+00:00 app[web.1]: handling {"event":"validateRoom","roomName":"a","clientID":"75","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:25+00:00 app[web.1]: handling {"event":"validateRoom","roomName":"a","clientID":"75","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:25+00:00 app[web.1]: handling {"event":"createRoom","roomName":"a","password":"","playerCount":8,"clientID":"75","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:29+00:00 heroku[router]: at=info method=GET path=/start host=mysterious-cliffs-4762.herokuapp.com fwd="50.17.161.113" dyno=web.1 connect=1ms service=51ms status=200 bytes=23
+2013-04-04T19:26:29+00:00 app[web.1]: 50.17.161.113 - - [04/Apr/2013 19:26:29] "GET /start HTTP/1.1" 200 23 0.0120
+2013-04-04T19:26:29+00:00 app[web.1]: 10.92.98.230 - - [04/Apr/2013:19:26:29 UTC] "GET /start HTTP/1.1" 200 23
+2013-04-04T19:26:29+00:00 app[web.1]: - -> /start
+2013-04-04T19:26:30+00:00 app[web.1]: handling {"event":"validateUserName","roomName":"a","password":"","userName":"","clientID":"76","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:30+00:00 app[web.1]: handling {"event":"validateUserName","roomName":"a","password":"","userName":"","clientID":"76","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:30+00:00 app[web.1]: handling {"event":"validateUserName","roomName":"a","password":"","userName":"a","clientID":"76","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:31+00:00 app[web.1]: handling {"event":"validateUserName","roomName":"a","password":"","userName":"a","clientID":"76","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:31+00:00 app[web.1]: handling {"event":"joinRoom","roomName":"a","password":"","userName":"a","clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:31+00:00 app[web.1]: handling {"event":"loadFromServer","roomName":"a","clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:31+00:00 app[web.1]: handling {"event":"loadFromServer","roomName":"a","clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:33+00:00 app[web.1]: handling {"event":"plantField","field":1,"crop":"grass","clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:34+00:00 app[web.1]: handling {"event":"plantField","field":0,"crop":"cancel","clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:35+00:00 app[web.1]: handling {"event":"plantField","field":0,"crop":"corn","clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:36+00:00 app[web.1]: handling {"event":"farmerReady","clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:36+00:00 app[web.1]: handling {"event":"getFarmInfo","clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:36+00:00 app[web.1]: handling {"event":"getLatestFieldHistory","field":0,"clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:36+00:00 app[web.1]: handling {"event":"getLatestFarmerHistory","clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:36+00:00 app[web.1]: handling {"event":"getLatestFieldHistory","field":1,"clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:38+00:00 app[web.1]: handling {"event":"farmerReady","clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:39+00:00 app[web.1]: handling {"event":"plantField","field":0,"crop":"grass","clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"
+}
+2013-04-04T19:26:40+00:00 app[web.1]: handling {"event":"farmerReady","clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:40+00:00 app[web.1]: handling {"event":"getLatestFieldHistory","field":0,"clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:40+00:00 app[web.1]: handling {"event":"getFarmInfo","clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:40+00:00 app[web.1]: handling {"event":"getLatestFieldHistory","field":1,"clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:26:40+00:00 app[web.1]: handling {"event":"getLatestFarmerHistory","clientID":"76","roomID":"a","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:51:03+00:00 heroku[api]: Add-on add newrelic:standard by wstrinz@gmail.com
+2013-04-04T19:51:03+00:00 heroku[api]: Release v39 created by wstrinz@gmail.com
+2013-04-04T19:51:03+00:00 heroku[web.1]: State changed from up to starting
+2013-04-04T19:51:06+00:00 heroku[web.1]: Stopping all processes with SIGTERM
+2013-04-04T19:51:07+00:00 app[web.1]: 
+2013-04-04T19:51:07+00:00 app[web.1]: == Sinatra has ended his set (crowd applauds)
+2013-04-04T19:51:08+00:00 app[web.1]: [2013-04-04 19:51:08] INFO  going to shutdown ...
+2013-04-04T19:51:08+00:00 app[web.1]: [2013-04-04 19:51:08] INFO  WEBrick::HTTPServer#start done.
+2013-04-04T19:51:09+00:00 heroku[web.1]: Starting process with command `bundle exec ruby sinat.rb -p
+ 51095`
+2013-04-04T19:51:16+00:00 heroku[web.1]: Stopping remaining processes with SIGKILL
+2013-04-04T19:51:16+00:00 heroku[web.1]: Error R12 (Exit timeout) -> At least one process failed to exit within 10 seconds of SIGTERM
+2013-04-04T19:51:18+00:00 heroku[web.1]: Process exited with status 137
+2013-04-04T19:51:32+00:00 app[web.1]: [2013-04-04 19:51:32] INFO  WEBrick 1.3.1
+2013-04-04T19:51:32+00:00 app[web.1]: [2013-04-04 19:51:32] INFO  ruby 1.9.3 (2013-02-21) [java]
+2013-04-04T19:51:32+00:00 app[web.1]: == Sinatra/1.3.5 has taken the stage on 51095 for production with backup from WEBrick
+2013-04-04T19:51:32+00:00 app[web.1]: [2013-04-04 19:51:32] INFO  WEBrick::HTTPServer#start: pid=2 port=51095
+2013-04-04T19:51:33+00:00 heroku[web.1]: State changed from starting to up
+2013-04-04T19:52:28+00:00 heroku[router]: at=info method=GET path=/start host=mysterious-cliffs-4762.herokuapp.com fwd="23.22.12.238" dyno=web.1 connect=2ms service=227ms status=200 bytes=50
+2013-04-04T19:52:28+00:00 app[web.1]: 23.22.12.238 - - [04/Apr/2013 19:52:28] "GET /start HTTP/1.1" 200 50 0.1230
+2013-04-04T19:52:28+00:00 app[web.1]: - -> /start
+2013-04-04T19:52:28+00:00 app[web.1]: 10.217.33.219 - - [04/Apr/2013:19:52:28 UTC] "GET /start HTTP/1.1" 200 50
+2013-04-04T19:52:30+00:00 app[web.1]: connecting to redis server
+2013-04-04T19:52:30+00:00 app[web.1]: handling {"event":"validateRoom","roomName":"w","clientID":"0","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:52:30+00:00 app[web.1]: handling {"event":"validateRoom","roomName":"wi","clientID":"0","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:52:30+00:00 app[web.1]: handling {"event":"validateRoom","roomName":"wil","clientID":"0","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:52:30+00:00 app[web.1]: handling {"event":"validateRoom","roomName":"will","clientID":"0","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:52:32+00:00 app[web.1]: handling {"event":"validateRoom","roomName":"will","clientID":"0","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:52:32+00:00 app[web.1]: handling {"event":"createRoom","roomName":"will","password":"","playerCount":8,"clientID":"0","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:52:36+00:00 app[web.1]: handling {"event":"changeSettings","roomName":"will","fieldCount":4,"contractsOn":false,"mgmtOptsOn":false,"clientID":"0","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:01+00:00 app[web.1]: 23.22.12.238 - - [04/Apr/2013 19:53:01] "GET /start HTTP/1.1" 200 23 0.0090
+2013-04-04T19:53:01+00:00 app[web.1]: 10.66.163.81 - - [04/Apr/2013:19:53:01 UTC] "GET /start HTTP/1.1" 200 23
+2013-04-04T19:53:01+00:00 app[web.1]: - -> /start
+2013-04-04T19:53:02+00:00 app[web.1]: handling {"event":"validateUserName","roomName":"w","password":"","userName":"","clientID":"1","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:02+00:00 app[web.1]: handling {"event":"validateUserName","roomName":"wi","password":"","userName":"","clientID":"1","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:02+00:00 app[web.1]: handling {"event":"validateUserName","roomName":"wil","password":"","userName":"","clientID":"1","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:02+00:00 app[web.1]: handling {"event":"validateUserName","roomName":"will","password":"","userName":"","clientID":"1","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:02+00:00 app[web.1]: handling {"event":"validateUserName","roomName":"will","password":"","userName":"","clientID":"1","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:01+00:00 heroku[router]: at=info method=GET path=/start host=mysterious-cliffs-4762.herokuapp.com fwd="23.22.12.238" dyno=web.1 connect=5ms service=35ms status=200 bytes=23
+2013-04-04T19:53:03+00:00 app[web.1]: handling {"event":"validateUserName","roomName":"will","password":"","userName":"w","clientID":"1","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:04+00:00 app[web.1]: handling {"event":"validateUserName","roomName":"will","password":"","userName":"w","clientID":"1","roomID":null,"deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:04+00:00 app[web.1]: handling {"event":"joinRoom","roomName":"will","password":"","userName":"w","clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:04+00:00 app[web.1]: handling {"event":"loadFromServer","roomName":"will","clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:04+00:00 app[web.1]: handling {"event":"loadFromServer","roomName":"will","clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:07+00:00 app[web.1]: handling {"event":"plantField","field":1,"crop":"grass","clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:08+00:00 app[web.1]: handling {"event":"plantField","field":0,"crop":"corn","clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:09+00:00 app[web.1]: handling {"event":"farmerReady","clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:09+00:00 app[web.1]: handling {"event":"getLatestFieldHistory","field":0,"clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:09+00:00 app[web.1]: handling {"event":"getFarmInfo","clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:09+00:00 app[web.1]: handling {"event":"getLatestFieldHistory","field":2,"clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:09+00:00 app[web.1]: handling {"event":"getLatestFieldHistory","field":1,"clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:09+00:00 app[web.1]: handling {"event":"getLatestFarmerHistory","clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:09+00:00 app[web.1]: handling {"event":"getLatestFieldHistory","field":3,"clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:13+00:00 app[web.1]: handling {"event":"farmerReady","clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:15+00:00 app[web.1]: handling {"event":"plantField","field":3,"crop":"grass","clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:16+00:00 app[web.1]: handling {"event":"plantField","field":2,"crop":"corn","clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:17+00:00 app[web.1]: handling {"event":"plantField","field":0,"crop":"grass","clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:23+00:00 app[web.1]: handling {"event":"farmerReady","clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:23+00:00 app[web.1]: handling {"event":"getFarmInfo","clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:23+00:00 app[web.1]: handling {"event":"getLatestFieldHistory","field":3,"clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:23+00:00 app[web.1]: handling {"event":"getLatestFieldHistory","field":0,"clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:23+00:00 app[web.1]: handling {"event":"getLatestFieldHistory","field":1,"clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:23+00:00 app[web.1]: handling {"event":"getLatestFieldHistory","field":2,"clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}
+2013-04-04T19:53:23+00:00 app[web.1]: handling {"event":"getLatestFarmerHistory","clientID":"1","roomID":"will","deviseName":"wstrinz@gmail.com"}

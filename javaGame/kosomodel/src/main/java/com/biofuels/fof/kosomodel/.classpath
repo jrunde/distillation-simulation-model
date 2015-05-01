@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
+	<classpathentry kind="lib" path="/Applications/GAMS/gams24.1_osx_x64_64_sfx/apifiles/Java/api/GAMSJavaAPI.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>

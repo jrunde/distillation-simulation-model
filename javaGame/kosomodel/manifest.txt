@@ -1,0 +1,2 @@
+Manifest-Version: 1.0
+Class-Path: $GAMSDIR/apifiles/Java/api/GAMSJavaAPI.jar

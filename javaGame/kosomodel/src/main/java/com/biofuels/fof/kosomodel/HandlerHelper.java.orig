@@ -1,0 +1,896 @@
+package com.biofuels.fof.kosomodel;
+
+import com.biofuels.fof.kosomodel.FieldHistory.HistoryYear;
+
+import java.text.DecimalFormat;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.LinkedList;
+import java.util.List;
+import java.util.Map;
+
+import org.json.simple.JSONArray;
+import org.json.simple.JSONObject;
+import org.json.simple.JSONValue;
+
+import akka.actor.ActorRef;
+
+public class HandlerHelper {
+
+	public Map<String, Game> games = new HashMap<>();
+	private ActorRef listener;
+	private ActorRef handler;
+	public HandlerHelper() {
+
+	}
+
+	public HandlerHelper(ActorRef listener, ActorRef handler) {
+		this.listener = listener;
+		this.handler = handler;
+	}
+
+	@SuppressWarnings("unchecked")
+	public String[] handle(String event){
+
+		ArrayList<String> replies = new ArrayList<>();
+		JSONObject eventObj = (JSONObject) JSONValue.parse(event);
+		String clientID = "-1";
+
+		if(eventObj.get("clientID") != null) clientID = (String) eventObj.get("clientID");
+
+		String roomName = (String) eventObj.get("roomName");
+		String roomID = (String) eventObj.get("roomID");
+		if (roomID == null) roomID = roomName;
+		String farmerName = (String) eventObj.get("userName");
+		String deviseName = (String) eventObj.get("deviseName");
+<<<<<<< HEAD
+
+
+		switch (eventObj.get("event").toString()){
+		case "validateRoom":
+			if(games.get(roomName) != null) 
+				sendMessage(buildJson(clientID.toString(), "validateRoom", "result", false));
+			else
+				sendMessage(buildJson(clientID.toString(), "validateRoom", "result", true));
+			break;
+
+		case "globalValidateRoom":
+			boolean roomResult = false;
+			boolean needsPass = false;
+			boolean correctPass = false;
+			if(games.get(roomName) != null){
+				roomResult = true;
+				if(games.get(roomName).hasPassword()){
+					needsPass = true;
+					if(games.get(roomName).getPassword().equals(eventObj.get("password")))
+						correctPass = true;
+				}
+			}
+
+			sendMessage(buildJson(clientID.toString(), "globalValidateRoom","roomResult",roomResult,"needsPassword",needsPass,
+					"passwordResult",correctPass));
+			break;
+
+		case "globalJoinRoom":
+			boolean joinResult = false;
+			if(games.get(roomName) != null){
+				if(games.get(roomName).hasPassword()){
+					if(games.get(roomName).getPassword().equals(eventObj.get("password")))
+						joinResult = true;
+				}
+				else
+					joinResult = true;
+			}
+			sendMessage(buildJson(clientID.toString(), "globalJoinRoom","result",joinResult));
+			break;
+
+		case "clearAllGames":
+			games.clear();
+			break;
+
+		case "changeSettings":
+			//replies.add(event);
+			Integer fields = null;
+			if(eventObj.get("fieldCount") != null)
+				fields = ((Long)eventObj.get("fieldCount")).intValue();
+
+			games.get(roomID).changeSettings(fields,
+					(boolean) eventObj.get("contractsOn"), (boolean)eventObj.get("mgmtOptsOn"),(boolean)eventObj.get("helpPopupsOn"));
+			break;
+
+		case "createRoom":
+			Long fieldCount = (Long)eventObj.get("fieldCount");
+			Boolean soilVariation = (Boolean)eventObj.get("soilVariation");
+			if(soilVariation == null)
+				soilVariation = false ;
+
+			if(games.get(roomName) != null){
+				sendMessage(buildJson(clientID.toString(), "createRoom", "result", false));
+			}
+			else if(((String)eventObj.get("password")).length()>0){
+				games.put(roomName, new Game(roomName, (String)eventObj.get("password"), (long)eventObj.get("playerCount"), soilVariation, this));
+				games.get(roomName).changeSettings(fieldCount.intValue(), games.get(roomName).isContracts(), games.get(roomName).isManagement(),games.get(roomName).isHelpPopups());
+				sendMessage(buildJson(clientID.toString(), "createRoom","result",true));
+			}
+			else{
+				games.put(roomName, new Game(roomName, (long)eventObj.get("playerCount"), soilVariation, this));
+				games.get(roomName).changeSettings(fieldCount.intValue(), games.get(roomName).isContracts(), games.get(roomName).isManagement(),games.get(roomName).isHelpPopups());
+				sendMessage(buildJson(clientID.toString(), "createRoom","result",true));
+			}
+
+			//replies.add("{\"event\":\"createRoom\",\"result\":true}");
+			break;
+
+		case "validateUserName":
+			roomResult = (roomExists(roomName) && !games.get(roomName).isFull());
+			boolean nameResult = false;
+			needsPass = false;
+			correctPass = false;
+			if(roomResult){
+				nameResult = !eventObj.get("userName").equals("");
+				nameResult = nameResult && ((!farmerExistsInRoom(farmerName, roomName)
+						|| (deviseName != null && games.get(roomName).getFarmForPlayer(farmerName).getCurrentUser().equals(deviseName))));
+				needsPass = games.get(roomName).hasPassword();
+				if(needsPass){
+					correctPass = games.get(roomName).getPassword().equals(eventObj.get("password"));
+				}
+			}
+			sendMessage(buildJson(clientID.toString(), "validateUserName","roomResult",roomResult,"needsPassword",needsPass,
+					"passwordResult",correctPass,"userNameResult",nameResult));
+			break;                
+
+			// TODO: this could get rolled into a single global message
+		case "getFarmerList":
+			broadcastFarmerList(roomID);
+			broadcastGlobalInfo(roomID);
+			break;
+
+		case "kickPlayer":
+			JSONObject msg = new JSONObject();
+			String farmer = (String) eventObj.get("player");
+			Boolean result = games.get(roomID).removePlayer(farmer);
+			msg.put("event", "kickPlayer");
+			msg.put("clientID", roomID);
+			msg.put("player", farmer);
+			msg.put("result", result);
+			sendMessage(msg.toJSONString());
+			break;
+
+		case "plantField":
+			games.get(roomID).getFarm(clientID).setField(((Long)eventObj.get("field")).intValue(),(String) eventObj.get("crop"));
+			break;
+
+		case "setFieldManagement":
+			int field = ((Long)eventObj.get("field")).intValue();
+			String technique = (String) eventObj.get("technique");
+			boolean value = (boolean) eventObj.get("value");
+			games.get(roomID).getFarm(clientID).changeFieldManagement(field, technique, value);
+			break;
+
+		case "getGameInfo":
+			sendGetGameInfo(roomID, clientID);
+			break;
+
+		case "advanceStage":
+			doAdvanceStage(roomID);
+			break;
+
+		case "farmerReady":
+			Game g = games.get(roomID);
+			g.getFarm(clientID).setReady(true);
+			g.farmerReady();
+			broadcastFarmerList(roomID);
+			broadcastGlobalInfo(roomID);
+
+			if(g.allReady())
+				doAdvanceStage(roomID);
+			break;
+
+		case "getFarmData":
+			g = games.get(roomID);
+			if(g != null){
+				if(g.getFarm(clientID)!=null)
+					sendGetFarmData(g.getFarm(clientID).getName(), roomID, clientID);
+				else if (g.getFarmForPlayer(farmerName) != null)
+					sendGetFarmData(g.getFarmForPlayer(farmerName).getName(), roomID, clientID);
+			}
+			break;
+
+		case "getCurrentSettings":
+			sendCurrentSettings(clientID, roomID, clientID);
+			break;            
+
+		case "setWaitForModerator":
+			games.get(roomID).setWaitForModerator((String)eventObj.get("stage"), (boolean)eventObj.get("value"));
+			break;
+
+		case "endGame":
+			games.remove(roomID);
+			break;
+
+		case "applyAdvancedSettings":
+			int complexity = ((Long)eventObj.get("complexity")).intValue();
+			games.get(roomID).getEconomy().setComplexity(complexity);
+			break;
+
+		case "reweightSustainability":
+			games.get(roomID).reweightSustainability(
+					Integer.parseInt(eventObj.get("economy").toString()),
+					Integer.parseInt(eventObj.get("energy").toString()), 
+					Integer.parseInt(eventObj.get("environment").toString()));
+			break;
+
+		case "assignBots":
+			String bot = eventObj.get("name").toString();
+			//int economy = Integer.parseInt(eventObj.get("economy").toString());
+			//int energy = Integer.parseInt(eventObj.get("energy").toString());
+			//int environment = Integer.parseInt(eventObj.get("environment").toString());
+			double economy = Double.parseDouble(eventObj.get("economy").toString());
+			double energy = Double.parseDouble(eventObj.get("energy").toString());
+			double environment = Double.parseDouble(eventObj.get("environment").toString());
+			double weightSum = economy + energy + environment;
+			economy = economy/weightSum;
+			energy = energy/weightSum;
+			environment = environment/weightSum;
+			
+			Farm ourBotsFarm = games.get(roomID).getFarmForPlayer(bot);
+			games.get(roomID).getBotMap().get(ourBotsFarm).updateWeights(economy, environment, energy);
+
+
+			// for testing purposes, can be deleted
+			System.out.println(bot + "'s strategy is now:");
+			System.out.println("Economy: " + economy);
+			System.out.println("Energy: " + energy);
+			System.out.println("Environment: " + environment);
+
+			break;
+
+		case "togglePause":
+			boolean state = games.get(roomID).togglePause();
+			JSONObject pauseMsg = new JSONObject();
+			pauseMsg.put("event", "togglePause");
+			pauseMsg.put("clientID", roomID);
+			pauseMsg.put("state", state);
+			sendMessage(pauseMsg.toJSONString());
+			break;
+
+		case "newBot":
+			games.get(roomID).addBot(roomID);
+			//Prepare for bots to receive weight info:
+			//TODO: How would the data for weighting be passed!?
+			//games.get(roomID).addBot(roomID, ec_weight, env_weight, en_weight)
+			break;
+
+		case "setPrices":
+			games.get(roomID).setPrices((Long)(Long.parseLong((String)eventObj.get("corn"))), (Long)(Long.parseLong((String)eventObj.get("grass"))), (Long)(Long.parseLong((String)eventObj.get("cover"))));
+			break;
+
+		case "joinRoom":
+			boolean roomExist = roomExists(roomName);
+			boolean shouldMakeNew = false;
+			boolean shouldRejoin = false;
+
+			if(roomExist){
+				shouldMakeNew = !farmerExistsInRoom(farmerName, roomName) && !games.get(roomName).isFull();
+				if(!shouldMakeNew && !games.get(roomName).isFull()){
+					shouldRejoin = deviseName != null && games.get(roomName).getFarmForPlayer(farmerName).getCurrentUser().equals(deviseName);
+				}
+			}
+
+			if(roomExist && !games.get(roomName).getBannedNames().contains(farmerName) && (shouldMakeNew || shouldRejoin) && games.get(roomName).getPassword().equals(eventObj.get("password")))
+			{
+				if(shouldMakeNew){
+					games.get(roomName).addFarmer(farmerName, clientID, false);
+					games.get(roomName).getFarmForPlayer(farmerName).setCurrentUser(deviseName);
+				}
+				else if(shouldRejoin){
+					games.get(roomName).rejoinFarmer(farmerName, clientID);
+				}
+				sendMessage(buildJson(clientID.toString(), "joinRoom","result",true,"roomName",roomName,"userName",(String)eventObj.get("userName")));
+				sendCurrentSettings(clientID, roomID, clientID);
+
+
+				JSONArray list = new JSONArray();
+				msg = new JSONObject();
+				for(Farm f:games.get(roomName).getFarms()){
+					JSONObject farm = new JSONObject();
+					farm.put("name", f.getName());
+					farm.put("ready", true);
+					list.add(farm);
+				}
+
+				broadcastFarmerList(roomID);
+				broadcastGlobalInfo(roomID);
+
+				pauseMsg = new JSONObject();
+				pauseMsg.put("event", "togglePause");
+				pauseMsg.put("clientID", clientID);
+				pauseMsg.put("state", games.get(roomName).isPaused());
+				sendMessage(pauseMsg.toJSONString());
+			}
+			else
+				sendMessage(buildJson(clientID.toString(), "joinRoom","result",false));
+			break;
+		default:
+=======
+        
+		
+        switch (eventObj.get("event").toString()){
+            case "validateRoom":
+                if(games.get(roomName) != null) 
+                    sendMessage(buildJson(clientID.toString(), "validateRoom", "result", false));
+                else
+                    sendMessage(buildJson(clientID.toString(), "validateRoom", "result", true));
+                break;
+                
+            case "globalValidateRoom":
+                boolean roomResult = false;
+                boolean needsPass = false;
+                boolean correctPass = false;
+                if(games.get(roomName) != null){
+                    roomResult = true;
+                    if(games.get(roomName).hasPassword()){
+                        needsPass = true;
+                        if(games.get(roomName).getPassword().equals(eventObj.get("password")))
+                            correctPass = true;
+                    }
+                }
+                
+                sendMessage(buildJson(clientID.toString(), "globalValidateRoom","roomResult",roomResult,"needsPassword",needsPass,
+                                      "passwordResult",correctPass));
+                break;
+                
+            case "globalJoinRoom":
+                boolean joinResult = false;
+                if(games.get(roomName) != null){
+                    if(games.get(roomName).hasPassword()){
+                        if(games.get(roomName).getPassword().equals(eventObj.get("password")))
+                            joinResult = true;
+                    }
+                    else
+                        joinResult = true;
+                }
+                sendMessage(buildJson(clientID.toString(), "globalJoinRoom","result",joinResult));
+                break;
+                
+            case "clearAllGames":
+                games.clear();
+                break;
+                
+            case "createRoom":
+                Long fieldCount = (Long)eventObj.get("fieldCount");
+                Boolean soilVariation = (Boolean)eventObj.get("soilVariation");
+                if(soilVariation == null)
+                    soilVariation = false ;
+                
+                if(games.get(roomName) != null){
+                    sendMessage(buildJson(clientID.toString(), "createRoom", "result", false));
+                }
+                else if(((String)eventObj.get("password")).length()>0){
+                    games.put(roomName, new Game(roomName, (String)eventObj.get("password"), (long)eventObj.get("playerCount"), soilVariation));
+                    games.get(roomName).changeSettings(fieldCount.intValue(), games.get(roomName).isContracts(), games.get(roomName).isManagement(),games.get(roomName).isHelpPopups());
+                    sendMessage(buildJson(clientID.toString(), "createRoom","result",true));
+                }
+                else{
+                    games.put(roomName, new Game(roomName, (long)eventObj.get("playerCount"), soilVariation));
+                    games.get(roomName).changeSettings(fieldCount.intValue(), games.get(roomName).isContracts(), games.get(roomName).isManagement(),games.get(roomName).isHelpPopups());
+                    sendMessage(buildJson(clientID.toString(), "createRoom","result",true));
+                }
+                
+                //replies.add("{\"event\":\"createRoom\",\"result\":true}");
+                break;
+                
+            case "validateUserName":
+                roomResult = (roomExists(roomName) && !games.get(roomName).isFull());
+                boolean nameResult = false;
+                needsPass = false;
+                correctPass = false;
+                if(roomResult){
+                    nameResult = !eventObj.get("userName").equals("");
+                    nameResult = nameResult && ((!farmerExistsInRoom(farmerName, roomName)
+                                                 || (deviseName != null && games.get(roomName).getFarmForPlayer(farmerName).getCurrentUser().equals(deviseName))));
+                    needsPass = games.get(roomName).hasPassword();
+                    if(needsPass){
+                        correctPass = games.get(roomName).getPassword().equals(eventObj.get("password"));
+                    }
+                }
+                sendMessage(buildJson(clientID.toString(), "validateUserName","roomResult",roomResult,"needsPassword",needsPass,
+                                      "passwordResult",correctPass,"userNameResult",nameResult));
+                break;                
+                
+            case "getFarmerList":
+                broadcastFarmerList(roomID);
+                broadcastGlobalInfo(roomID);
+                break;
+                
+            case "kickPlayer":
+                JSONObject msg = new JSONObject();
+                String farmer = (String) eventObj.get("player");
+                Boolean result = games.get(roomID).removePlayer(farmer);
+                msg.put("event", "kickPlayer");
+                msg.put("clientID", roomID);
+                msg.put("player", farmer);
+                msg.put("result", result);
+                sendMessage(msg.toJSONString());
+                break;
+                
+            case "plantField":
+                games.get(roomID).getFarm(clientID).setField(((Long)eventObj.get("field")).intValue(),(String) eventObj.get("crop"));
+                break;
+                
+            case "setFieldManagement":
+                int field = ((Long)eventObj.get("field")).intValue();
+                String technique = (String) eventObj.get("technique");
+                boolean value = (boolean) eventObj.get("value");
+				games.get(roomID).getFarm(clientID).changeFieldManagement(field, technique, value);
+                break;
+                
+            case "getGameInfo":
+                sendGetGameInfo(roomID, clientID);
+                break;
+                
+            case "advanceStage":
+                doAdvanceStage(roomID);
+                break;
+                
+            case "farmerReady":
+                Game g = games.get(roomID);
+                g.getFarm(clientID).setReady(true);
+                g.farmerReady();
+                broadcastFarmerList(roomID);
+                broadcastGlobalInfo(roomID);
+                
+                if(g.allReady())
+                    doAdvanceStage(roomID);
+                break;
+            
+            case "getFarmData":
+                g = games.get(roomID);
+                if(g != null){
+                    if(g.getFarm(clientID)!=null) {
+                        sendGetFarmData(g.getFarm(clientID).getName(), roomID, clientID);
+                        sendGetGameInfo(roomID, clientID);
+                    } else if (g.getFarmForPlayer(farmerName) != null) {
+                        sendGetFarmData(g.getFarmForPlayer(farmerName).getName(), roomID, clientID);
+                        sendGetGameInfo(roomID, clientID);
+                    }
+                }
+                break;
+ 
+            case "getCurrentSettings":
+                sendCurrentSettings(clientID, roomID, clientID);
+                break;            
+                
+            case "setWaitForModerator":
+                games.get(roomID).setWaitForModerator((String)eventObj.get("stage"), (boolean)eventObj.get("value"));
+                break;
+                
+            case "endGame":
+                games.remove(roomID);
+                break;
+                
+            case "assignBots":
+                String bot = eventObj.get("name").toString();
+                double economy = Double.parseDouble(eventObj.get("economy").toString());
+                double energy = Double.parseDouble(eventObj.get("energy").toString());
+                double environment = Double.parseDouble(eventObj.get("environment").toString());
+                double weightSum = economy + energy + environment;
+                economy = economy/weightSum;
+                energy = energy/weightSum;
+                environment = environment/weightSum;
+
+                Farm ourBotsFarm = games.get(roomID).getFarmForPlayer(bot);
+                //TODO: games.get(roomID).getBotMap().get(ourBotsFarm).updateWeights(economy, environment, energy);
+                
+                break;
+                
+            case "togglePause":
+                boolean state = games.get(roomID).togglePause();
+                JSONObject pauseMsg = new JSONObject();
+                pauseMsg.put("event", "togglePause");
+                pauseMsg.put("clientID", roomID);
+                pauseMsg.put("state", state);
+                sendMessage(pauseMsg.toJSONString());
+                break;
+                
+            case "newBot":
+                games.get(roomID).addBot(roomID);
+                //Prepare for bots to receive weight info:
+                //TODO: How would the data for weighting be passed!?
+                //games.get(roomID).addBot(roomID, ec_weight, env_weight, en_weight)
+                break;
+                
+            case "applyModeratorSettings":
+                Game game = games.get(roomID);
+                
+                // Set crop prices
+                game.setPrices(
+                    Double.parseDouble(((JSONObject) eventObj.get("prices")).get("corn").toString()), 
+                    Double.parseDouble(((JSONObject) eventObj.get("prices")).get("grass").toString()), 
+                    Double.parseDouble(((JSONObject) eventObj.get("prices")).get("cover").toString()));
+                
+                // Reweight sustainability
+                game.reweightSustainability(
+                    Integer.parseInt(((JSONObject) eventObj.get("sustainability")).get("economy").toString()),
+                    Integer.parseInt(((JSONObject) eventObj.get("sustainability")).get("energy").toString()), 
+                    Integer.parseInt(((JSONObject) eventObj.get("sustainability")).get("environment").toString()));
+                    
+                // Change game settings
+                game.changeSettings(null, false, (boolean) eventObj.get("mgmtOptsOn"), 
+                    (boolean) eventObj.get("helpPopupsOn"));
+                boolean dynamic = (boolean) eventObj.get("dynamicMarket");
+                if (dynamic) game.getEconomy().setComplexity(1);
+                else game.getEconomy().setComplexity(0);
+                
+                //TODO: take a look at this case
+                if ((boolean) eventObj.get("recalculateBots")) {
+                    // have bots run again
+                }
+                    
+                break;
+                
+            case "joinRoom":
+                boolean roomExist = roomExists(roomName);
+                boolean shouldMakeNew = false;
+                boolean shouldRejoin = false;
+                
+                if(roomExist){
+                    shouldMakeNew = !farmerExistsInRoom(farmerName, roomName) && !games.get(roomName).isFull();
+                    if(!shouldMakeNew && !games.get(roomName).isFull()){
+                        shouldRejoin = deviseName != null && games.get(roomName).getFarmForPlayer(farmerName).getCurrentUser().equals(deviseName);
+                    }
+                }
+                
+                if(roomExist && !games.get(roomName).getBannedNames().contains(farmerName) && (shouldMakeNew || shouldRejoin) && games.get(roomName).getPassword().equals(eventObj.get("password")))
+                {
+                    if(shouldMakeNew){
+                        games.get(roomName).addFarmer(farmerName, clientID, false);
+                        games.get(roomName).getFarmForPlayer(farmerName).setCurrentUser(deviseName);
+                    }
+                    else if(shouldRejoin){
+                        games.get(roomName).rejoinFarmer(farmerName, clientID);
+                    }
+                    sendMessage(buildJson(clientID.toString(), "joinRoom","result",true,"roomName",roomName,"userName",(String)eventObj.get("userName")));
+                    sendGetGameInfo(roomID, clientID);
+                    
+                    
+                    JSONArray list = new JSONArray();
+                    msg = new JSONObject();
+                    for(Farm f:games.get(roomName).getFarms()){
+                        JSONObject farm = new JSONObject();
+                        farm.put("name", f.getName());
+                        farm.put("ready", true);
+                        list.add(farm);
+                    }
+                    
+                    broadcastFarmerList(roomID);
+                    broadcastGlobalInfo(roomID);
+                    
+                    pauseMsg = new JSONObject();
+                    pauseMsg.put("event", "togglePause");
+                    pauseMsg.put("clientID", clientID);
+                    pauseMsg.put("state", games.get(roomName).isPaused());
+                    sendMessage(pauseMsg.toJSONString());
+                }
+                else
+                    sendMessage(buildJson(clientID.toString(), "joinRoom","result",false));
+                break;
+            default:
+>>>>>>> merge1
+		}
+		String[] ret = new String[replies.size()];
+		replies.toArray(ret);
+		return ret;
+	}
+
+	@SuppressWarnings("unchecked")
+	public void doAdvanceStage(String roomID) {		
+		games.get(roomID).advanceStage();
+		int stage = games.get(roomID).getStageNumber();
+		String roundName = games.get(roomID).getStageName();
+		int year = games.get(roomID).getYear();
+
+		JSONObject replyAdvanceStage = new JSONObject();
+		replyAdvanceStage.put("event", "advanceStage");
+		replyAdvanceStage.put("stageNumber", stage);
+		replyAdvanceStage.put("stageName", roundName);
+		replyAdvanceStage.put("year", year);
+		replyAdvanceStage.put("clientID", roomID);
+
+		broadcastFarmerList(roomID);
+
+		System.out.println("Advanced stage. New Stage == " + stage);
+		// executes when in the planting stage
+		if (stage == 0){		
+			for(Farm fa:games.get(roomID).getFarms()){
+				sendGetFarmData(fa.getName(), roomID, fa.getClientID());
+			}
+
+		}
+		broadcastGlobalInfo(roomID);
+		sendMessage(replyAdvanceStage.toJSONString());
+
+		if (stage == 0) {
+			for(Bot b:games.get(roomID).getBots())
+				(new Thread(b)).start();
+		}
+
+	}
+
+	public void sendMessage(String message) {
+		EventMessage msg = new EventMessage(message);
+		listener.tell(msg, handler);
+	}
+
+	private boolean roomExists(String room){
+		return games.get(room) != null;
+	}
+
+	private boolean farmerExistsInRoom(String farmer, String room){
+		if(roomExists(room)){
+			return games.get(room).hasFarmer(farmer);
+		}
+		return false;
+	}
+
+	private String buildJson(String clientID, String event, Object ... arguments){
+		String start = "{\"event\":\""+event+"\",\"clientID\":\"" + clientID + "\",";
+		StringBuilder sb = new StringBuilder(start);
+		if(!(arguments.length % 2 == 0)){
+			System.out.println("bad argument list; not an even number");
+			return (sb.append("}")).toString();
+		}
+		for(int i = 0;i<arguments.length;i+=2){
+			String str1 = arguments[i].toString();
+			if(arguments[i] instanceof String){
+				str1 = "\"" + arguments[i] + "\"";
+			}
+			String str2 = arguments[i+1].toString();
+			if(arguments[i+1] instanceof String){
+				str2 = "\"" + arguments[i+1] + "\"";
+			}
+			sb.append(str1);
+			sb.append(":");
+			sb.append(str2);
+
+			if(i+2 == arguments.length){
+				sb.append("}");
+			}
+			else{
+				sb.append(",");
+			}
+		}
+		return(sb.toString());
+	}
+
+	public void setListener(ActorRef actor) {
+		this.listener = actor;
+	}
+
+	@SuppressWarnings("unchecked")
+	public void sendGetFarmData(String farmerName, String roomID,  Object sendAddr){
+		Game game = games.get(roomID);
+		Farm farm = game.getFarmForPlayer(farmerName);
+		Economy economy = game.getEconomy();
+		LinkedList<com.biofuels.fof.kosomodel.FarmHistory.HistoryYear> farmHist = farm.getHistory();
+		LinkedList<com.biofuels.fof.kosomodel.EconomyHistory.HistoryYear> econHist = economy.getHistory();
+
+		JSONObject reply = new JSONObject();
+		JSONArray years = new JSONArray();
+		reply.put("event", "getFarmData");
+
+		for(int year=0; year<game.getYear(); year++){
+
+			JSONObject farmData = new JSONObject();
+			JSONArray fields = new JSONArray();
+
+			// attach field data
+			for(Field f:farm.getFields()){
+				JSONObject field = new JSONObject();
+				FieldHistory.HistoryYear fData = f.getHistory().getYear(year);
+				field.put("x",f.getLoc()[0]);
+				field.put("y",f.getLoc()[1]);
+				field.put("netRevenue", fData.fieldRevenue);
+				field.put("costs", fData.costs);
+				field.put("som", fData.SOM);
+				field.put("bci", fData.BCI);
+				field.put("gbi", fData.GBI);
+				field.put("emissions", fData.emissions);
+				field.put("n2o", fData.n2o);
+				field.put("water", fData.fieldWater);
+				field.put("respiration", fData.respiration);
+				field.put("yield", fData.yield);
+				field.put("netEnergy", fData.netTotalEnergy/40); 
+				field.put("productionEnergy", -fData.productionEnergy/40000);
+				field.put("refinementEnergy", fData.refineryEnergy/40000);
+				field.put("crop", fData.crop.toString());
+				field.put("fertilize", fData.fertilizer);
+				field.put("till", fData.till);
+				fields.add(field);
+			}
+
+			farmData.put("fields", fields);
+
+			// create farm object for specific year from farm history
+			com.biofuels.fof.kosomodel.FarmHistory.HistoryYear farmYear;
+			farmYear = null;
+			for(com.biofuels.fof.kosomodel.FarmHistory.HistoryYear h:farmHist){	
+				if(h.year == year)
+					farmYear = h;
+			}
+
+			// create economic object for specific year from economy history
+			com.biofuels.fof.kosomodel.EconomyHistory.HistoryYear econYear;
+			econYear = null;
+			for(com.biofuels.fof.kosomodel.EconomyHistory.HistoryYear ey:econHist){	
+				if(ey.year == year)
+					econYear = ey;
+			}
+
+			// sustainability		
+			farmData.put("sustainabilityScore", farmYear.sustainabilityScore);
+			farmData.put("sustainabilityRank", farmYear.sustainabilityRank);
+			farmData.put("economyWeight", game.getEconomyWeight());
+			farmData.put("energyWeight", game.getEnergyWeight());
+			farmData.put("environmentWeight", game.getEnvironmentWeight());
+
+			// economics          
+			farmData.put("cornIncome", farmYear.cornIncome);
+			farmData.put("grassIncome", farmYear.switchgrassIncome);
+			farmData.put("covercropIncome", farmYear.coverIncome);
+			farmData.put("cornPrice", econYear.corn_price);
+			farmData.put("covercropPrice", econYear.cover_price);
+			farmData.put("grassPrice", econYear.grass_price);
+			farmData.put("costs", farmYear.costs);
+			farmData.put("capital", farmYear.earnings);
+			farmData.put("economicScore", farmYear.economicsScore);
+			farmData.put("economicRank", farmYear.economicsRank);
+
+			// energy
+			farmData.put("cornYield", farmYear.cornYield);
+			farmData.put("covercropYield", farmYear.coverYield);
+			farmData.put("grassYield", farmYear.grassYield);
+			farmData.put("cornEnergy", farmYear.cornEnergy);
+			farmData.put("coverEnergy", farmYear.coverEnergy);
+			farmData.put("grassEnergy",  farmYear.grassEnergy);
+			farmData.put("netEnergy",  farmYear.netEnergy);
+			farmData.put("energyScore", farmYear.energyScore);
+			farmData.put("energyRank", farmYear.energyRank);
+
+			// environment
+			farmData.put("globalWater", farmYear.globalWater);
+			farmData.put("farmWater", farmYear.waterSubscore);
+			farmData.put("totalEmissions", farmYear.emissions);
+			farmData.put("emissionsSubscore", farmYear.emissionsSubscore);
+			farmData.put("n2o", farmYear.n2o);
+			farmData.put("som", farmYear.soilSubscore);
+			farmData.put("gbi", farmYear.gbiSubscore);
+			farmData.put("bci", farmYear.bciSubscore);
+			farmData.put("respiration", farmYear.soilRespiration);
+			farmData.put("environmentScore", farmYear.environmentScore);
+			farmData.put("environmentRank", farmYear.environmentRank);
+
+			years.add(farmData);
+		}
+
+		reply.put("years", years);
+		reply.put("clientID", sendAddr);
+		sendMessage(reply.toJSONString());
+	}
+
+	@SuppressWarnings("unchecked")
+	public void sendGetGameInfo(String roomID, Object sendAddr){
+		Game game = games.get(roomID);
+		int year = game.getYear();
+		int stage = game.getStageNumber();
+		boolean help = game.isHelpPopups();
+		List<String> enabledStages = game.getEnabledStages();
+		JSONArray stages = new JSONArray();
+		JSONObject weights = new JSONObject();
+		JSONObject bots = new JSONObject();
+		JSONObject prices = new JSONObject();
+		JSONObject strategy = new JSONObject();
+		stages.addAll(enabledStages);
+		JSONObject replyGameInfo = new JSONObject();
+		replyGameInfo.put("event", "getGameInfo");
+		replyGameInfo.put("year", year);
+		replyGameInfo.put("stage", stage);
+		replyGameInfo.put("helpPopupsOn", help);
+		replyGameInfo.put("mgmtOptsOn", game.isManagement());
+
+		weights.put("economy", game.getEconomyWeight());
+		weights.put("energy", game.getEnergyWeight());
+		weights.put("environment", game.getEnvironmentWeight());
+
+		// hard-coded at the moment
+		for (Farm farm:game.getFarms()) {
+			int end = farm.getName().length() - 1;
+			if (farm.getName().substring(end - 4, end).equals("(Bot)")) {
+				strategy.put("economy", 1);
+				strategy.put("energy", 1);
+				strategy.put("environment", 1);
+				bots.put(farm.getName(), strategy);
+			}
+		}
+
+		prices.put("corn", game.getEconomy().getCornPrice());
+		prices.put("grass", game.getEconomy().getGrassPrice());
+		prices.put("cover", game.getEconomy().getCoverPrice());
+
+		int complexity = game.getEconomy().getComplexity();
+		boolean dynamicMarket = false;
+		if (complexity == 1) dynamicMarket = true;
+
+		replyGameInfo.put("dynamicMarket", dynamicMarket);
+		replyGameInfo.put("sustainabilityWeights", weights);
+		replyGameInfo.put("bots", bots);
+		replyGameInfo.put("prices", prices);
+		replyGameInfo.put("enabledStages", stages);
+		replyGameInfo.put("clientID", sendAddr);
+		sendMessage(replyGameInfo.toJSONString());
+	}
+
+	@SuppressWarnings("unchecked")
+	private void sendCurrentSettings(String clientID, String roomID, Object sendAddr){
+		Game game = games.get(roomID);
+		JSONObject reply = new JSONObject();
+		reply.put("event", "changeSettings");
+		reply.put("contractsOn", game.isContracts());
+		reply.put("mgmtOptsOn", game.isManagement());
+		reply.put("helpPopupsOn", game.isHelpPopups());
+		reply.put("fields", game.getFieldsPerFarm());
+		reply.put("clientID", sendAddr);
+		sendMessage(reply.toJSONString());
+		int stage = game.getStageNumber();
+		String roundName = game.getStageName();
+		JSONObject replyAdvanceStage = new JSONObject();
+		replyAdvanceStage.put("event", "advanceStage");
+		replyAdvanceStage.put("stageNumber", stage);
+		replyAdvanceStage.put("stageName", roundName);
+		replyAdvanceStage.put("clientID", sendAddr);
+		replyAdvanceStage.put("year", game.getYear());
+		sendMessage(replyAdvanceStage.toJSONString());
+
+	}
+
+	@SuppressWarnings("unchecked")
+	private void broadcastGlobalInfo(String roomID){
+		Game game = games.get(roomID);
+		JSONObject reply = new JSONObject();
+		reply.put("event", "globalInfo");
+		reply.put("cornPrice", game.getEconomy().getCornPrice());
+		reply.put("grassPrice", game.getEconomy().getGrassPrice());
+		reply.put("coverPrice", game.getEconomy().getCoverPrice());
+		reply.put("globalSustainability", game.globalSustain);
+		reply.put("globalEconomy", game.globalEcon);
+		reply.put("globalEnvironment", game.globalEnv);
+		reply.put("globalEnergy", game.globalEnergy);
+		reply.put("globalBCI", game.globalBCI);
+		reply.put("globalGBI", game.globalGBI);
+		reply.put("stageName", game.getStageName());
+		reply.put("year", game.getYear());
+		reply.put("clientID",roomID);
+		sendMessage(reply.toJSONString());
+	}
+
+	@SuppressWarnings("unchecked")
+	private void broadcastFarmerList(String roomID){
+		Game game = games.get(roomID);
+		JSONArray list = new JSONArray();
+		JSONObject msg = new JSONObject();
+		for(Farm f:game.getFarms()){
+			JSONObject farm = new JSONObject();
+			farm.put("name", f.getName());
+			farm.put("ready", f.isReady());
+			farm.put("rank", f.getOverallRank());
+			farm.put("economy", f.getEconRank());
+			farm.put("energy",f.getEnergyRank());
+			farm.put("environment", f.getEnvRank());
+			list.add(farm);
+		}
+		msg.put("event", "getFarmerList");
+		msg.put("clientID", roomID);
+		msg.put("Farmers", list);
+		sendMessage(msg.toJSONString());
+	}
+}
